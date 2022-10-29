@@ -7,6 +7,9 @@ dist
 docs/dist
 example/public/main.js
 
+# models under example (it will be copied over with `npm run build`)
+example/public/models
+
 #
 # General-Purpose Exclusions
 #
