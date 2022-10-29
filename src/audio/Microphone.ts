@@ -1,4 +1,4 @@
-import {theAudioContext, waitForTheAudioContext} from "./theAudioContext";
+import {waitForTheAudioContext} from "./theAudioContext";
 
 // For an AudioWorklet-based version of this see the "AudioWorklet" branch. There were incompatibilities with Webpack that I'm hoping get resolved in a future release of webpack.
 
@@ -32,6 +32,7 @@ async function _getMicrophoneUserMedia():Promise<MediaStream> {
     const timer = setInterval(() => {
        _getIt().then(mediaStream => {
          if (mediaStream) {
+           clearInterval(timer);
            resolve(mediaStream);
            return;
          }
@@ -55,11 +56,8 @@ interface IInitResults {
 }
 
 async function _init():Promise<IInitResults> {
-  console.log('!!1');
   const mediaStream = await _getMicrophoneUserMedia();
-  console.log('!!2');
   const context = await waitForTheAudioContext();
-  console.log('!!3');
   const bufferSize = _getBestBufferSize();
 
   const inputChannels = 1; // Nearly every mic will be one channel.
