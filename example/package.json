@@ -1,0 +1,30 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "Example web app showing sl-web-speech usage.",
+  "private": true,
+  "scripts": {
+    "watch": "webpack --watch",
+    "build": "webpack",
+    "http": "http-server -o ./ -c-1",
+    "start": "npm run build && npm run http"
+  },
+  "author": "Erik Hermansen",
+  "license": "MIT",
+  "dependencies": {
+    "sl-web-speech": "LATEST"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.6",
+    "@babel/preset-env": "^7.19.4",
+    "babel-loader": "^9.0.0",
+    "http-server": "^14.1.1",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  }
+}

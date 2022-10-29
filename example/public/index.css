@@ -1,0 +1,12 @@
+#toggleListenButton {
+    margin: .5rem;
+}
+
+#statusMessage {
+    margin: .5rem;
+}
+
+#instructions {
+    font-size: smaller;
+    margin: .3rem;
+}

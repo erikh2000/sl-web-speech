@@ -1,0 +1,57 @@
+{
+  "name": "sl-web-speech",
+  "version": "0.1.0",
+  "description": "Library for handling speech on web with focus on interactive storytelling use cases.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && npm run docs",
+    "clean": "rm -rf coverage dist docs/dist",
+    "clean:modules": "rm -rf node_modules package-lock.json && npm install",
+    "docs": "jsdoc -c ./docs/conf.json -d ./docs/dist/",
+    "publish": "npm run build && npm publish",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .js,.ts"
+  },
+  "author": "Erik Hermansen",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 16"
+  },
+  "jest": {
+    "collectCoverage": false,
+    "collectCoverageFrom": [
+      "./src/**/*.{js,ts}",
+      "!./src/3rdParty/**",
+      "!./src/index.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 100
+      }
+    },
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.19.4",
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/jest": "^29.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "@typescript-eslint/parser": "^5.41.0",
+    "eslint": "^8.26.0",
+    "jest": "^29.2.2",
+    "jsdoc": "^3.6.11",
+    "jsdoc-plugin-typescript": "^2.2.0",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "vosk-browser": "^0.0.7"
+  }
+}
