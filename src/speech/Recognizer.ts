@@ -2,7 +2,8 @@ import {IEmptyCallback, IStringCallback} from "../types/callbacks";
 import Microphone from "../audio/Microphone";
 import SpeechSignaller from "./SpeechSignaller";
 
-import {createModel, KaldiRecognizer, Model} from 'vosk-browser';
+import {KaldiRecognizer} from 'vosk-browser';
+import {loadModelAsNeeded} from "./languageModelUtil";
 
 interface InitResult {
   kaldiRecognizer:KaldiRecognizer;
@@ -14,16 +15,10 @@ interface LastText {
   receivedTime:number
 }
 
-async function _loadModelAsNeeded(path:string):Promise<Model> {
-  const windowUnknown:any = window;
-  if (!windowUnknown.__kaldiModel) windowUnknown.__kaldiModel = await createModel("/models/" + path);
-  return windowUnknown.__kaldiModel as Model;
-}
-
 async function _init():Promise<InitResult> {
 
   const ENGLISH_PATH = 'vosk-model-small-en-us-0.15.tar.gz';
-  const model = await _loadModelAsNeeded(ENGLISH_PATH);
+  const model = await loadModelAsNeeded(ENGLISH_PATH);
 
   const contextSampleRate = 44100; // Ideally, we get this from audioContext so that the microphone sample rate will match Kaldi. But for that you need some kind of popup that collects a user gesture.
   const kaldiRecognizer = new model.KaldiRecognizer(contextSampleRate);
