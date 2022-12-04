@@ -15,6 +15,9 @@ export type WordTiming = {
   endTime:number
 }
 
+export type WordTimeline = WordTiming[];
+
+
 type VoskWordResult = {
   conf:number,
   start:number,
@@ -24,7 +27,7 @@ type VoskWordResult = {
 
 function _secsToMsecs(secs:number) { return Math.round(secs * 1000); }
 
-function _messageToWordTimings(message:any):WordTiming[] {
+function _messageToWordTimeline(message:any):WordTimeline {
   const timings:WordTiming[] = [];
   const results = message?.result?.result ?? [];
   results.forEach((result:VoskWordResult) => {
@@ -43,7 +46,7 @@ function _padSamples(samples:Float32Array, sampleRate:number, padMSecs:number):F
   return paddedSamples;
 }
 
-class Transcriber {
+class WordTimelineExtractor {
   private _model:Model|null;
 
   constructor(onReady?:IEmptyCallback) { 
@@ -54,7 +57,7 @@ class Transcriber {
     });
   }
   
-  async decodeSamples(audioBuffer:AudioBuffer):Promise<WordTiming[]> {
+  async extract(audioBuffer:AudioBuffer):Promise<WordTimeline> {
     const { sampleRate } = audioBuffer;
     
     if (!this._model) throw Error('Called decodeSamples() before onReady() called.');
@@ -62,7 +65,7 @@ class Transcriber {
     recognizer.setWords(true);
     
     const samples = audioBuffer.getChannelData(0); // TODO: Could get both channels for stereo and average to one array.
-    const paddedSamples = _padSamples(samples, sampleRate, 2000);
+    const paddedSamples = _padSamples(samples, sampleRate, 2000); // HACK: Adding silence at end will trigger the result callback. Look for an update post 0.0.7 in vosk-browser for a better fix. 
     
     return new Promise<WordTiming[]>((resolve, _reject) => {
       recognizer.on( "result", _onResult);
@@ -72,10 +75,10 @@ class Transcriber {
         const resultText = (message as any)?.result?.text;
         recognizer.remove();
         if (!resultText || !resultText.length) return;
-        resolve(_messageToWordTimings(message));
+        resolve(_messageToWordTimeline(message));
       }
     });
   }
 }
 
-export default Transcriber;
+export default WordTimelineExtractor;
