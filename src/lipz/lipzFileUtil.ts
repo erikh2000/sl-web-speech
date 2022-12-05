@@ -1,5 +1,6 @@
 import { phonemeToViseme } from "./phonemeUtil";
 import LipzEvent from "./LipzEvent";
+import {replacePathExtension} from '../common/pathUtil';
 
 export const FRAMES_PER_SECOND = 24;
 const END_PHONEME_CHAR = '.';
@@ -25,4 +26,8 @@ export function loadLipzFromText(phonemesText:string):LipzEvent[] {
     }
   }
   return events;
+}
+
+export function wavToLipzTextFilename(wavFilename:string):string {
+  return replacePathExtension(wavFilename, '.lipz.txt');
 }
