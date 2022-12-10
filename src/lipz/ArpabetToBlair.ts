@@ -14,6 +14,7 @@ const ArpabetToBlair:ArpabetToBlairMap = {
   'ax'    : Viseme.E,
   'ay'    : Viseme.AI,
   'b'     : Viseme.MBP,
+  'bl'    : Viseme.MBP,
   'ch'    : Viseme.CONS,
   'd'     : Viseme.CONS,
   'dx'    : Viseme.CONS,
