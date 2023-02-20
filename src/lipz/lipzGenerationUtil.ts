@@ -39,6 +39,7 @@ const PREFERRED_MINIMUM_PHONEME_DURATION = 90;
 
 let phoneticDictionary:PhoneticDictionary|null = null;
 let extractor:WordTimelineExtractor|null = null;
+let isInitialized:boolean = false;
 
 function _isConsonantViseme(viseme:Viseme):boolean {
   return (viseme === Viseme.CONS || viseme === Viseme.WQ || viseme === Viseme.MBP || viseme === Viseme.L || viseme === Viseme.FV);
@@ -154,8 +155,8 @@ function _isVisemeMoreExpressive(viseme:Viseme, than:Viseme):boolean {
   return visemeExpressiveScore[viseme] > visemeExpressiveScore[than];
 }
 
-function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, audioBuffer:AudioBuffer):string {
-  const frameCount = Math.ceil((audioBuffer.duration * 1000) / MSECS_PER_FRAME);
+function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, speechDurationSeconds:number):string {
+  const frameCount = Math.ceil((speechDurationSeconds * 1000) / MSECS_PER_FRAME);
   const frames:string[] = [];
   for(let fillI = 0; fillI < frameCount; ++fillI) { frames[fillI] = ' '; }
   
@@ -174,23 +175,91 @@ function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, aud
   return frames.join('');
 }
 
+function _isNotLetterOrApostrophe(char:string):boolean {
+  return !('abcdefghijklmnopqrstuvwxyz\''.includes(char.toLowerCase()));
+}
+
+function _speechTextToWords(speechText:string):string[] {
+  const words:string[] = [];
+  let word = '';
+  for(let i = 0; i < speechText.length; ++i) {
+    const char = speechText[i];
+    if (_isNotLetterOrApostrophe(char)) {
+      if (word.length > 0) {
+        words.push(word);
+        word = '';
+      }
+    } else {
+      word += char;
+    }
+  }
+  if (word.length > 0) words.push(word);
+  return words;
+}
+
+function _estimateWordDuration(word:string):number {
+  const phonemes = phoneticDictionary?.find(word) ?? null;
+  if (!phonemes) {
+    if (word.length < 4) return 100;
+    if (word.length < 6) return 200;
+    return 300;
+  }
+  const phonemeCount = phonemes.split(' ').length;
+  return phonemeCount * PREFERRED_MINIMUM_PHONEME_DURATION;
+}
+
+function _calcSpeechDurationFromWordTimeline(wordTimeline:WordTiming[]):number {
+  let speechDuration = 0;
+  for(let i = 0; i < wordTimeline.length; ++i) {
+    const wordTiming = wordTimeline[i];
+    speechDuration += (wordTiming.endTime - wordTiming.startTime);
+  }
+  return speechDuration;
+}
+
+function _speechTextToWordTimeline(speechText:string):WordTimeline {
+  const words = _speechTextToWords(speechText);
+  const wordTimeline:WordTimeline = [];
+  let time = 0;
+  words.forEach(word => {
+    const wordDuration = _estimateWordDuration(word);
+    wordTimeline.push({word, startTime:time, endTime:time+wordDuration});
+    time += wordDuration;
+  });
+  return wordTimeline;
+}
+
 export async function init():Promise<void> {
+  if (isInitialized) return;
+  
   phoneticDictionary = new PhoneticDictionary();
   await phoneticDictionary.init();
 
   return new Promise(resolve => {
     extractor = new WordTimelineExtractor(() => {
+      isInitialized = true;
       resolve();
     })
   });
 }
 
-export async function generateLipzTextFromAudioBuffer(audioBuffer:AudioBuffer, debugCapture:any):Promise<string> {
+export async function generateLipzTextFromAudioBuffer(audioBuffer:AudioBuffer, debugCapture:any = null):Promise<string> {
   if (!extractor) throw Error('Called before init() completed.');
   const wordTimeline = await extractor.extract(audioBuffer);
   if (debugCapture) debugCapture.wordTimeline = wordTimeline;
   const phonemeTimeline = _wordToPhonemeTimeline(wordTimeline);
-  const lipzText = _phonemeTimelineAndAudioToLipzText(phonemeTimeline, audioBuffer);
+  const lipzText = _phonemeTimelineAndAudioToLipzText(phonemeTimeline, audioBuffer.duration);
+  if (debugCapture) debugCapture.phonemeTimeline = _lipzTextToPhonemeTimeline(lipzText);
+  return lipzText;
+}
+
+// Makes a guess at what lip animation for speech text would be if the words in the text were spoken.
+export function generateLipzTextFromSpeechText(speechText:string, debugCapture:any = null):string {
+  const wordTimeline = _speechTextToWordTimeline(speechText);
+  if (debugCapture) debugCapture.wordTimeline = wordTimeline;
+  const speechDurationSecs = _calcSpeechDurationFromWordTimeline(wordTimeline) / 1000;
+  const phonemeTimeline = _wordToPhonemeTimeline(wordTimeline);
+  const lipzText = _phonemeTimelineAndAudioToLipzText(phonemeTimeline, speechDurationSecs);
   if (debugCapture) debugCapture.phonemeTimeline = _lipzTextToPhonemeTimeline(lipzText);
   return lipzText;
 }
