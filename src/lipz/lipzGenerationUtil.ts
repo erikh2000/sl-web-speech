@@ -235,27 +235,28 @@ function _calcSpeechDurationFromWordTimeline(wordTimeline:WordTiming[]):number {
   return speechDuration;
 }
 
-function _speechTextToWordTimeline(speechText:string):WordTimeline {
+function _speechTextToWordTimeline(speechText:string, speedMultiplier:number):WordTimeline {
   const [words, pauses] = _speechTextToWordsAndPauses(speechText);
   const wordTimeline:WordTimeline = [];
   let time = 0;
   for (let i = 0; i < words.length; ++i) {
-    const word = words[i], pauseDuration = pauses[i]
-    const wordDuration = _estimateWordDuration(word);
+    const word = words[i];
+    const pauseDuration = Math.round(pauses[i] * speedMultiplier);
+    const wordDuration = Math.round(_estimateWordDuration(word) * speedMultiplier);
     wordTimeline.push({word, startTime:time, endTime:time+wordDuration});
     time += (wordDuration + pauseDuration);
   }
   return wordTimeline;
 }
 
-export function calcEndOfDialoguePause(speechText:string) {
+export function calcEndOfDialoguePause(speechText:string, speedMultiplier:number):number {
   let pauseDuration = 0;
   for(let i = speechText.length - 1; i >= 0; --i) {
     const char = speechText[i];
     if (_isLetterOrApostrophe(char)) break;
     pauseDuration += _getPauseDurationForChar(char);
   }
-  return pauseDuration;
+  return Math.round(pauseDuration * speedMultiplier);
 }
 
 export async function init():Promise<void> {
@@ -283,8 +284,8 @@ export async function generateLipzTextFromAudioBuffer(audioBuffer:AudioBuffer, d
 }
 
 // Makes a guess at what lip animation for speech text would be if the words in the text were spoken.
-export function generateLipzTextFromSpeechText(speechText:string, debugCapture:any = null):string {
-  const wordTimeline = _speechTextToWordTimeline(speechText);
+export function generateLipzTextFromSpeechText(speechText:string, speedMultiplier:number, debugCapture:any = null):string {
+  const wordTimeline = _speechTextToWordTimeline(speechText, speedMultiplier);
   if (debugCapture) debugCapture.wordTimeline = wordTimeline;
   const speechDurationSecs = _calcSpeechDurationFromWordTimeline(wordTimeline) / 1000;
   const phonemeTimeline = _wordToPhonemeTimeline(wordTimeline);
