@@ -175,26 +175,44 @@ function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, spe
   return frames.join('');
 }
 
-function _isNotLetterOrApostrophe(char:string):boolean {
-  return !('abcdefghijklmnopqrstuvwxyz\''.includes(char.toLowerCase()));
+function _isLetterOrApostrophe(char:string):boolean {
+  return ('abcdefghijklmnopqrstuvwxyz\''.includes(char.toLowerCase()));
 }
 
-function _speechTextToWords(speechText:string):string[] {
-  const words:string[] = [];
-  let word = '';
+function _getPauseDurationForChar(char:string):number {
+  switch(char) {
+    case '.': return 500;
+    case ',': return 200; 
+    case ';': return 300;
+    case ':': return 400;
+    case '?': return 500;
+    case '!': return 600;
+    default: return 0;
+  }
+}
+
+function _speechTextToWordsAndPauses(speechText:string):[words:string[], pauses:number[]] {
+  const words:string[] = [], pauses:number[] = [];
+  let word = '', pauseDuration = 0;
   for(let i = 0; i < speechText.length; ++i) {
     const char = speechText[i];
-    if (_isNotLetterOrApostrophe(char)) {
+    if (!_isLetterOrApostrophe(char)) {
+      pauseDuration += _getPauseDurationForChar(char);
       if (word.length > 0) {
         words.push(word);
+        pauses.push(pauseDuration);
         word = '';
+        pauseDuration = 0;
       }
     } else {
       word += char;
     }
   }
-  if (word.length > 0) words.push(word);
-  return words;
+  if (word.length > 0) {
+    words.push(word);
+    pauses.push(pauseDuration);
+  }
+  return [words, pauses];
 }
 
 function _estimateWordDuration(word:string):number {
@@ -218,15 +236,26 @@ function _calcSpeechDurationFromWordTimeline(wordTimeline:WordTiming[]):number {
 }
 
 function _speechTextToWordTimeline(speechText:string):WordTimeline {
-  const words = _speechTextToWords(speechText);
+  const [words, pauses] = _speechTextToWordsAndPauses(speechText);
   const wordTimeline:WordTimeline = [];
   let time = 0;
-  words.forEach(word => {
+  for (let i = 0; i < words.length; ++i) {
+    const word = words[i], pauseDuration = pauses[i]
     const wordDuration = _estimateWordDuration(word);
     wordTimeline.push({word, startTime:time, endTime:time+wordDuration});
-    time += wordDuration;
-  });
+    time += (wordDuration + pauseDuration);
+  }
   return wordTimeline;
+}
+
+export function calcEndOfDialoguePause(speechText:string) {
+  let pauseDuration = 0;
+  for(let i = speechText.length - 1; i >= 0; --i) {
+    const char = speechText[i];
+    if (_isLetterOrApostrophe(char)) break;
+    pauseDuration += _getPauseDurationForChar(char);
+  }
+  return pauseDuration;
 }
 
 export async function init():Promise<void> {
