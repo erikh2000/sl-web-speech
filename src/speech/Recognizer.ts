@@ -1,9 +1,9 @@
-import {IEmptyCallback, IStringCallback} from "../types/callbacks";
-import Microphone from "../audio/Microphone";
+import {loadModelAsNeeded} from "./languageModelUtil";
 import SpeechSignaller from "./SpeechSignaller";
+import {IEmptyCallback, IStringCallback} from "../types/callbacks";
 
 import {KaldiRecognizer} from 'vosk-browser';
-import {loadModelAsNeeded} from "./languageModelUtil";
+import {Microphone} from 'sl-web-audio';
 
 interface InitResult {
   kaldiRecognizer:KaldiRecognizer;
