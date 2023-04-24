@@ -49,6 +49,11 @@ function _onPartial(partial:string, lastPartial:LastText, onPartial:IStringCallb
   onPartial(partial);
 }
 
+function _onFinal(final:string, onFinal:IStringCallback) {
+  if (!onFinal || !final.length) return;
+  onFinal(final);
+}
+
 class Recognizer {
   kaldiRecognizer?:KaldiRecognizer;
   microphone?:Microphone;
@@ -67,12 +72,16 @@ class Recognizer {
     });
   }
 
-  bindCallbacks(onPartial:IStringCallback, onStartSpeaking:IEmptyCallback, onStopSpeaking:IEmptyCallback) {
+  bindCallbacks(onPartial:IStringCallback, onStartSpeaking:IEmptyCallback, onStopSpeaking:IEmptyCallback, onFinal?:IStringCallback) {
     if (!this.kaldiRecognizer) throw Error('Tried to bind callbacks before recognizer ready.');
     const nextSpeechSignaller = new SpeechSignaller(onStartSpeaking, onStopSpeaking);
     this.speechSignaller = nextSpeechSignaller;
     const onPartialCurried = (message:any) => _onPartial(message.result.partial, this.lastPartial, onPartial, nextSpeechSignaller);
     this.kaldiRecognizer.on( "partialresult", onPartialCurried);
+    if (onFinal) {
+      const onFinalCurried = (message:any) => _onFinal(message.result.text, onFinal);
+      this.kaldiRecognizer.on( "result", onFinalCurried);
+    }
   }
 
   unbindCallbacks() {
