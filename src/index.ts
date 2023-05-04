@@ -12,6 +12,7 @@ export type { PhonemeTimeline, PhonemeTiming } from './lipz/lipzGenerationUtil';
 // API functions
 export * from './lipz/lipzGenerationUtil';
 export * from './lipz/lipzFileUtil';
+export * from './lipz/phonemeUtil';
 
 /* This file only imports and re-exports top-level APIs and has been excluded from Jest 
    coverage reporting in package.json. Exports are tested via unit tests associated
