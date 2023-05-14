@@ -6,7 +6,7 @@ class LipzEvent implements IIterableEvent {
   private _viseme:Viseme;
   private _phoneme:string;
 
-  constructor(time:number, viseme:Viseme, phoneme:string) {
+  constructor(time:number, viseme:Viseme, phoneme:string = '') {
     this._time = time;
     this._viseme = viseme;
     this._phoneme = phoneme;

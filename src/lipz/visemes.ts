@@ -12,9 +12,8 @@ enum Viseme {
   COUNT
 };
 
-export function visemeToText(viseme:Viseme) {
+export function visemeToText(viseme:Viseme):string {
   switch(viseme) {
-    case Viseme.REST: return 'rest';
     case Viseme.AI: return 'ai';
     case Viseme.CONS: return 'cons';
     case Viseme.E: return 'e';
@@ -24,6 +23,22 @@ export function visemeToText(viseme:Viseme) {
     case Viseme.MBP: return 'mbp';
     case Viseme.U: return 'u';
     case Viseme.WQ: return 'wq';
+    default: return 'rest';
+  }
+}
+
+export function textToViseme(text:string):Viseme {
+  switch(text) {
+    case 'ai': return Viseme.AI;
+    case 'cons': return Viseme.CONS;
+    case 'e': return Viseme.E;
+    case 'fv': return Viseme.FV;
+    case 'l': return Viseme.L;
+    case 'o': return Viseme.O;
+    case 'mbp': return Viseme.MBP;
+    case 'u': return Viseme.U;
+    case 'wq': return Viseme.WQ;
+    default: return Viseme.REST;
   }
 }
 
