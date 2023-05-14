@@ -53,7 +53,7 @@ class EventIterator<T extends IIterableEvent> {
     
     // A prior call may have left more events to return.
     if (offsetTime < this._intervalEndTime) {
-      const event = this._intervalEvents.pop();
+      const event = this._intervalEvents.shift();
       return event ? event : null;
     }
     this._intervalEvents = [];
@@ -67,7 +67,7 @@ class EventIterator<T extends IIterableEvent> {
     }
     if (_isPastEnd(this._intervalEndTime) && !this._intervalEvents.length) this._intervalEndTime = 0;
     
-    const event = this._intervalEvents.pop();
+    const event = this._intervalEvents.shift();
     return event ? event : null;
   }
   

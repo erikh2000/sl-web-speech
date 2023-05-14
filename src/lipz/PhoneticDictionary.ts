@@ -22,12 +22,9 @@ function _parseEntry(entry:string):[word:string, phonemes:string]|null {
   return [word, phonemes];
 }
 
-async function _loadDictionary(dictionaryUrl:string):Promise<Dictionary> {
+function _parseDictionary(dictionaryText:string):Dictionary {
   const dictionary:Dictionary = {};
-  const response = await fetch(dictionaryUrl);
-  const text = await response.text();
-  
-  const entries = text.split('\n');
+  const entries = dictionaryText.split('\n');
   entries.forEach(entry => {
     if (entry.startsWith(";;;")) return; // Comment line
     const result = _parseEntry(entry);
@@ -38,6 +35,11 @@ async function _loadDictionary(dictionaryUrl:string):Promise<Dictionary> {
   return dictionary;
 }
 
+async function _fetchDictionaryText(dictionaryUrl:string):Promise<string> {
+  const response = await fetch(dictionaryUrl);
+  return response.text();
+}
+
 class PhoneticDictionary {
   private _dictionary:Dictionary;
   
@@ -45,10 +47,13 @@ class PhoneticDictionary {
     this._dictionary = {};
   }
   
-  init(dictionaryUrl:string = '/cmuDict/cmudict-0.7b.txt') {
-    _loadDictionary(dictionaryUrl).then((dictionary:Dictionary) => {
-      this._dictionary = dictionary; 
-    });
+  async _fetchDictionaryText(dictionaryUrl:string):Promise<string> {
+    return _fetchDictionaryText(dictionaryUrl);
+  }
+  
+  async init(dictionaryUrl:string = '/cmuDict/cmudict-0.7b.txt') {
+    const dictionaryText = await this._fetchDictionaryText(dictionaryUrl);
+    this._dictionary = _parseDictionary(dictionaryText);
   }
   
   find(word:string):string|null {

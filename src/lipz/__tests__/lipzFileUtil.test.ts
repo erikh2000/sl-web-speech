@@ -1,4 +1,4 @@
-import {loadLipzFromText, FRAMES_PER_SECOND} from "../lipzFileUtil";
+import {wavToLipzTextFilename, loadLipzFromText, FRAMES_PER_SECOND} from "../lipzFileUtil";
 import LipzEvent from "../LipzEvent";
 import Viseme from "../visemes";
 
@@ -60,6 +60,15 @@ describe('lipzFileUtil', () => {
       ];
       const events:LipzEvent[] = loadLipzFromText(lipzText);
       expect(events).toEqual(expected);
+    });
+  });
+  
+  describe('wavToLipzTextFilename()', () => {
+    it('replaces the extension', () => {
+      const wavFilename = 'foo.wav';
+      const expected = 'foo.lipz.txt';
+      const lipzTextFilename = wavToLipzTextFilename(wavFilename);
+      expect(lipzTextFilename).toEqual(expected);
     });
   });
 });

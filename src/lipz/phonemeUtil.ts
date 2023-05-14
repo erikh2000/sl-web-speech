@@ -10,5 +10,5 @@ export function phonemeToViseme(phoneme:string):Viseme {
 
 export function phonemeToVisemeText(phoneme:string):string {
   const viseme = phonemeToViseme(phoneme);
-  return visemeToText(viseme) ?? 'rest';
+  return visemeToText(viseme);
 }
