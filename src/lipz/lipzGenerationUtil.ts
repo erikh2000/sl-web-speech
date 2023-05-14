@@ -155,6 +155,10 @@ function _isVisemeMoreExpressive(viseme:Viseme, than:Viseme):boolean {
   return visemeExpressiveScore[viseme] > visemeExpressiveScore[than];
 }
 
+function _stripLastCharacter(text:string):string {
+  return text.substring(0, text.length-1);
+}
+
 function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, speechDurationSeconds:number):string {
   const frameCount = Math.ceil((speechDurationSeconds * 1000) / MSECS_PER_FRAME);
   const frames:string[] = [];
@@ -167,7 +171,7 @@ function _phonemeTimelineAndAudioToLipzText(phonemeTimeline:PhonemeTimeline, spe
     if (currentPhoneme === ' ') {
       frames[frameNo] = `${phoneme}.`;
     } else {
-      const currentViseme = phonemeToViseme(frames[frameNo]);
+      const currentViseme = phonemeToViseme(_stripLastCharacter(frames[frameNo]));
       const nextViseme = phonemeToViseme(phoneme);
       if (_isVisemeMoreExpressive(nextViseme, currentViseme)) frames[frameNo] = `${phoneme}.`;
     }
