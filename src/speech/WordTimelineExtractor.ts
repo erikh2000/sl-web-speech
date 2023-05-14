@@ -1,7 +1,8 @@
 import {IEmptyCallback} from "../types/callbacks";
-
-import {Model} from 'vosk-browser';
 import {loadModelAsNeeded} from "./languageModelUtil";
+
+import {appendSilenceSamples, combineChannelSamples} from 'sl-web-audio';
+import {Model} from 'vosk-browser';
 import {RecognizerMessage} from "vosk-browser/dist/interfaces";
 
 async function _init():Promise<Model> {
@@ -36,16 +37,6 @@ function _messageToWordTimeline(message:any):WordTimeline {
   return timings;
 }
 
-function _padSamples(samples:Float32Array, sampleRate:number, padMSecs:number):Float32Array {
-  const padSampleCount = sampleRate * (padMSecs / 1000);
-  const sampleCount = samples.length + padSampleCount;
-  const paddedSamples:Float32Array = new Float32Array(sampleCount);
-  for(let sampleI = 0; sampleI < sampleCount; ++sampleI) {
-    paddedSamples[sampleI] = sampleI < samples.length ? samples[sampleI] : 0;
-  }
-  return paddedSamples;
-}
-
 class WordTimelineExtractor {
   private _model:Model|null;
 
@@ -64,8 +55,10 @@ class WordTimelineExtractor {
     const recognizer = new this._model.KaldiRecognizer(sampleRate);
     recognizer.setWords(true);
     
-    const samples = audioBuffer.getChannelData(0); // TODO: Could get both channels for stereo and average to one array.
-    const paddedSamples = _padSamples(samples, sampleRate, 2000); // HACK: Adding silence at end will trigger the result callback. Look for an update post 0.0.7 in vosk-browser for a better fix. 
+    const samples = audioBuffer.numberOfChannels === 1 
+      ? audioBuffer.getChannelData(0)
+      : combineChannelSamples([audioBuffer.getChannelData(0), audioBuffer.getChannelData(1)]);
+    const paddedSamples = appendSilenceSamples(samples, sampleRate, 2000); // HACK: Adding silence at end will trigger the result callback. Look for an update post 0.0.7 in vosk-browser for a better fix. 
     
     return new Promise<WordTiming[]>((resolve, _reject) => {
       recognizer.on( "result", _onResult);

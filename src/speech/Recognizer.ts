@@ -3,11 +3,12 @@ import SpeechSignaller from "./SpeechSignaller";
 import {IEmptyCallback, IStringCallback} from "../types/callbacks";
 
 import {KaldiRecognizer} from 'vosk-browser';
-import {Microphone} from 'sl-web-audio';
+import {Microphone, createSilenceSamples} from 'sl-web-audio';
 
 interface InitResult {
   kaldiRecognizer:KaldiRecognizer;
   microphone:Microphone;
+  silenceSamples: Float32Array;
 }
 
 interface LastText {
@@ -15,20 +16,27 @@ interface LastText {
   receivedTime:number
 }
 
+// Ideally, we get this from audioContext so that the microphone sample rate will match Kaldi. But for that you need some kind of popup that collects a user gesture.
+// TODO - change constructor and callers to pass in a sample rate.
+const DEFAULT_SAMPLE_RATE = 44100;
+
+// Amount of silence to append to force Kaldi to flush its buffer and return a final result.
+const FORCE_RESULT_SILENCE_MSECS = 2000;
+
 async function _init():Promise<InitResult> {
 
   const ENGLISH_PATH = 'vosk-model-small-en-us-0.15.tar.gz';
   const model = await loadModelAsNeeded(ENGLISH_PATH);
 
-  const contextSampleRate = 44100; // Ideally, we get this from audioContext so that the microphone sample rate will match Kaldi. But for that you need some kind of popup that collects a user gesture.
+  const contextSampleRate = DEFAULT_SAMPLE_RATE;
   const kaldiRecognizer = new model.KaldiRecognizer(contextSampleRate);
-
+  const silenceSamples = createSilenceSamples(contextSampleRate, FORCE_RESULT_SILENCE_MSECS);
   const _onReceiveAudio = (samples:Float32Array, sampleRate:number) => kaldiRecognizer.acceptWaveformFloat(samples, sampleRate);
   const microphone:Microphone = new Microphone(_onReceiveAudio);
   await microphone.init();
   microphone.disable();
 
-  return { kaldiRecognizer, microphone };
+  return { kaldiRecognizer, microphone, silenceSamples };
 }
 
 const TEXT_COOLDOWN_TIME = 500; // To allow for speaking the same text twice in succession.
@@ -59,15 +67,18 @@ class Recognizer {
   microphone?:Microphone;
   lastPartial:LastText;
   speechSignaller:SpeechSignaller | null;
+  silenceSamples:Float32Array;
   readyCount:number;
 
   constructor(onReady?:IEmptyCallback) {
     this.lastPartial = { text:'', receivedTime:-1 };
     this.speechSignaller = null;
+    this.silenceSamples = new Float32Array();
     this.readyCount = 0;
-    _init().then(({kaldiRecognizer, microphone}) => {
+    _init().then(({kaldiRecognizer, microphone, silenceSamples}) => {
       this.kaldiRecognizer = kaldiRecognizer;
       this.microphone = microphone;
+      this.silenceSamples = silenceSamples;
       if (onReady) onReady();
     });
   }
@@ -87,8 +98,15 @@ class Recognizer {
   unbindCallbacks() {
     this.kaldiRecognizer?.on('partialresult', () => { });
   }
+  
+  forceResult() {
+    this.kaldiRecognizer?.acceptWaveformFloat(this.silenceSamples, DEFAULT_SAMPLE_RATE);
+  }
 
-  mute() { this.microphone?.disable(); }
+  mute() {
+    this.forceResult(); // This allows recognizing a new result immediately after unmute() is called.
+    this.microphone?.disable(); 
+  }
   unmute() { this.microphone?.enable(); }
   
   get isMuted() {
