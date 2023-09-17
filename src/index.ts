@@ -14,6 +14,7 @@ export * from './lipz/lipzGenerationUtil';
 export * from './lipz/lipzFileUtil';
 export * from './lipz/phonemeUtil';
 export * from './lipz/visemes';
+export * from './common/languages';
 
 /* This file only imports and re-exports top-level APIs and has been excluded from Jest 
    coverage reporting in package.json. Exports are tested via unit tests associated

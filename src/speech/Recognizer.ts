@@ -1,5 +1,6 @@
 import {loadModelAsNeeded} from "./languageModelUtil";
 import SpeechSignaller from "./SpeechSignaller";
+import {DEFAULT_LANGUAGE_CODE} from "../common/languages";
 import {IEmptyCallback, IStringCallback} from "../types/callbacks";
 
 import {KaldiRecognizer} from 'vosk-browser';
@@ -23,10 +24,9 @@ const DEFAULT_SAMPLE_RATE = 44100;
 // Amount of silence to append to force Kaldi to flush its buffer and return a final result.
 const FORCE_RESULT_SILENCE_MSECS = 2000;
 
-async function _init():Promise<InitResult> {
-
-  const ENGLISH_PATH = 'vosk-model-small-en-us-0.15.tar.gz';
-  const model = await loadModelAsNeeded(ENGLISH_PATH);
+async function _init(languageCode:string):Promise<InitResult> {
+  
+  const model = await loadModelAsNeeded(languageCode);
 
   const contextSampleRate = DEFAULT_SAMPLE_RATE;
   const kaldiRecognizer = new model.KaldiRecognizer(contextSampleRate);
@@ -70,12 +70,12 @@ class Recognizer {
   silenceSamples:Float32Array;
   readyCount:number;
 
-  constructor(onReady?:IEmptyCallback) {
+  constructor(onReady?:IEmptyCallback, languageCode = DEFAULT_LANGUAGE_CODE) {
     this.lastPartial = { text:'', receivedTime:-1 };
     this.speechSignaller = null;
     this.silenceSamples = new Float32Array();
     this.readyCount = 0;
-    _init().then(({kaldiRecognizer, microphone, silenceSamples}) => {
+    _init(languageCode).then(({kaldiRecognizer, microphone, silenceSamples}) => {
       this.kaldiRecognizer = kaldiRecognizer;
       this.microphone = microphone;
       this.silenceSamples = silenceSamples;

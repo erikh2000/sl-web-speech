@@ -4,10 +4,10 @@ import {loadModelAsNeeded} from "./languageModelUtil";
 import {appendSilenceSamples, combineChannelSamples} from 'sl-web-audio';
 import {Model} from 'vosk-browser';
 import {RecognizerMessage} from "vosk-browser/dist/interfaces";
+import {DEFAULT_LANGUAGE_CODE} from "../common/languages";
 
-async function _init():Promise<Model> {
-  const ENGLISH_PATH = 'vosk-model-small-en-us-0.15.tar.gz';
-  return loadModelAsNeeded(ENGLISH_PATH);
+async function _init(languageCode:string):Promise<Model> {
+  return loadModelAsNeeded(languageCode);
 }
 
 export type WordTiming = {
@@ -17,7 +17,6 @@ export type WordTiming = {
 }
 
 export type WordTimeline = WordTiming[];
-
 
 type VoskWordResult = {
   conf:number,
@@ -40,9 +39,9 @@ function _messageToWordTimeline(message:any):WordTimeline {
 class WordTimelineExtractor {
   private _model:Model|null;
 
-  constructor(onReady?:IEmptyCallback) { 
+  constructor(onReady?:IEmptyCallback, languageCode = DEFAULT_LANGUAGE_CODE) { 
     this._model = null;
-    _init().then(model => {
+    _init(languageCode).then(model => {
       this._model = model;
       if (onReady) onReady();
     });
