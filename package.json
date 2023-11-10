@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "sl-web-audio": "^1.0.0",
+    "sl-web-speech": "^1.1.1",
     "vosk-browser": "^0.0.7"
   }
 }
