@@ -9,7 +9,7 @@ type Dictionary = {
 // it yourself, following their licensing terms. See http://www.speech.cs.cmu.edu/cgi-bin/cmudict for details. In 
 // this case, pass the correct URL to init() as the first parameter. Also, three cheers for CMU for making this 
 // valuable data available!
-export const WISP_DEFAULT_PHONETIC_DICTIONARY_URL = 'https://shared.wisp.studio/cmuDict/cmuDict-0.7b.txt';
+export const WISP_DEFAULT_PHONETIC_DICTIONARY_URL = 'https://shared.wisp.studio/cmudict/cmudict-0.7b.txt';
 
 function _normalizePhonemes(phonemes:string) {
   let result = '';
