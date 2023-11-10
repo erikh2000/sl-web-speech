@@ -1,4 +1,4 @@
-import PhoneticDictionary from "./PhoneticDictionary";
+import PhoneticDictionary, { WISP_DEFAULT_PHONETIC_DICTIONARY_URL } from "./PhoneticDictionary";
 
 import WordTimelineExtractor, {WordTimeline, WordTiming} from '../speech/WordTimelineExtractor';
 import LipzEvent from './LipzEvent';
@@ -263,11 +263,11 @@ export function calcEndOfDialoguePause(speechText:string, speedMultiplier:number
   return Math.round(pauseDuration * speedMultiplier);
 }
 
-export async function init():Promise<void> {
+export async function init(phoneticDictionaryUrl:string = WISP_DEFAULT_PHONETIC_DICTIONARY_URL):Promise<void> {
   if (isInitialized) return;
   
   phoneticDictionary = new PhoneticDictionary();
-  await phoneticDictionary.init();
+  await phoneticDictionary.init(phoneticDictionaryUrl);
 
   return new Promise(resolve => {
     extractor = new WordTimelineExtractor(() => {

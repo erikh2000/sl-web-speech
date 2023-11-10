@@ -2,6 +2,15 @@ type Dictionary = {
   [word: string]:string;
 };
 
+// If you are using sl-web-speech in your own project, this URL below won't work for your app in production due to 
+// CORS restrictions. However, in your local development, you can use "localhost:3000" (added a CORS allowance for 
+// that one) as long as you don't go crazy with the number of requests. (I'll just remove the allowance.) When you
+// you get to a production deployment, you can download the file from Carnegie Mellon University's website and host 
+// it yourself, following their licensing terms. See http://www.speech.cs.cmu.edu/cgi-bin/cmudict for details. In 
+// this case, pass the correct URL to init() as the first parameter. Also, three cheers for CMU for making this 
+// valuable data available!
+export const WISP_DEFAULT_PHONETIC_DICTIONARY_URL = 'https://shared.wisp.studio/cmuDict/cmuDict-0.7b.txt';
+
 function _normalizePhonemes(phonemes:string) {
   let result = '';
   for(let i = 0; i < phonemes.length; ++i) {
@@ -51,7 +60,7 @@ class PhoneticDictionary {
     return _fetchDictionaryText(dictionaryUrl);
   }
   
-  async init(dictionaryUrl:string = '/cmuDict/cmudict-0.7b.txt') {
+  async init(dictionaryUrl:string) {
     const dictionaryText = await this._fetchDictionaryText(dictionaryUrl);
     this._dictionary = _parseDictionary(dictionaryText);
   }

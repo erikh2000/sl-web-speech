@@ -1,6 +1,12 @@
 import {createModel, Model} from "vosk-browser";
 
-let modelsBaseUrl = '/models/';
+/*
+ With the CORS allowances I've set up, you'll be able to use this URL while developing if your web app is hosted from 
+ localhost:3000. (Just don't over-request like a freak, or I'll drop the allowance.) But when you deploy 
+ your app to production, you'll need to host the model yourself. In this case, you can call setModelsBaseUrl() to set 
+ the URL to your hosted model. The models are OSS-licensed from the Vosk project. Details at https://alphacephei.com/ 
+ */
+let modelsBaseUrl = 'https://shared.wisp.studio/vosk-models/';
 
 type LanguageCodeToModelName = {
   [code:string]:string
