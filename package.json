@@ -1,6 +1,6 @@
 {
   "name": "sl-web-speech",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Library for handling speech on web with focus on interactive storytelling use cases.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -53,7 +53,6 @@
   },
   "dependencies": {
     "sl-web-audio": "^1.0.0",
-    "sl-web-speech": "^1.1.1",
     "vosk-browser": "^0.0.7"
   }
 }
