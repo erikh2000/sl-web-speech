@@ -45,7 +45,7 @@ function _parseDictionary(dictionaryText:string):Dictionary {
 }
 
 async function _fetchDictionaryText(dictionaryUrl:string):Promise<string> {
-  const response = await fetch(dictionaryUrl);
+  const response = await fetch(dictionaryUrl, { mode: 'cors' });
   return response.text();
 }
 
