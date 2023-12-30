@@ -253,16 +253,6 @@ function _speechTextToWordTimeline(speechText:string, speedMultiplier:number):Wo
   return wordTimeline;
 }
 
-export function calcEndOfDialoguePause(speechText:string, speedMultiplier:number):number {
-  let pauseDuration = 0;
-  for(let i = speechText.length - 1; i >= 0; --i) {
-    const char = speechText[i];
-    if (_isLetterOrApostrophe(char)) break;
-    pauseDuration += _getPauseDurationForChar(char);
-  }
-  return Math.round(pauseDuration * speedMultiplier);
-}
-
 export async function init(phoneticDictionaryUrl:string = WISP_DEFAULT_PHONETIC_DICTIONARY_URL):Promise<void> {
   if (isInitialized) return;
   
