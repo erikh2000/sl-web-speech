@@ -18,15 +18,17 @@ But this project also contains a "models" directory which is separately licensed
 
 ## Usage
 
-Your web app will use 'sl-web-speech' as a dependency library. At time of writing, I've not published to NPM, so you'd need to `git clone` and use `npm link` or other solution to import into your web app. If anybody asks me to publish this on NPM, I'm willing to do that.
+Your web app will use 'sl-web-speech' as a dependency imported from "sl-web-speech".
 
-The files under "models" should be served from "/models" on your web server.
+The files under "models" should be served from your web server. You'll need to call `setModelsBaseUrl(YOUR-MODELS-BASE-URL)` before constructing the Recognizer. This is so that the Recognizer can find the language models it needs to use.
 
 Example web app code is shown below.
 
 ### Listen for Speech
 ```javascript
 import Recognizer from 'sl-web-speech';
+
+setModelsBaseUrl('https://yourserver.com/models/'); // URLs like "/models/" or "./models/" are also valid.
 
 /* Construct Recognizer *after* the user has performed some UI interaction in your web app. For security reasons, most 
    web browsers won't access microphone audio until there is a UI interaction happens. An easy way to accomplish this
